@@ -1,5 +1,6 @@
 # OCR 服务端应用
-该项目是一个基于 Flask 和 PaddleX 的 OCR（光学字符识别）服务端应用。它提供了一个 `/ocr` 接口，支持通过图片路径、URL 或 Base64 编码的图片进行文字识别，并返回识别结果和可视化的结果图像。
+
+> 该项目是一个基于 Flask 和 PaddleX 的 OCR（光学字符识别）服务端应用。它提供了一个 `/ocr` 接口，支持通过图片路径、URL 或 Base64 编码的图片进行文字识别，并返回识别结果和可视化的结果图像。
 
 ## 功能特性
 
@@ -14,11 +15,6 @@
   - [功能特性](#功能特性)
   - [目录](#目录)
   - [安装依赖](#安装依赖)
-  - [项目结构](#项目结构)
-  - [快速开始](#快速开始)
-    - [1. 克隆项目](#1-克隆项目)
-    - [2. 安装依赖](#2-安装依赖)
-    - [3. 运行应用](#3-运行应用)
   - [API 使用指南](#api-使用指南)
     - [请求地址](#请求地址)
     - [请求方法](#请求方法)
@@ -29,22 +25,29 @@
       - [2. 使用图片 URL](#2-使用图片-url)
       - [3. 使用 Base64 编码的图片](#3-使用-base64-编码的图片)
     - [示例响应](#示例响应)
-  - [注意事项](#注意事项)
-  - [许可证](#许可证)
+    - [注意事项](#注意事项)
 
 ## 安装依赖
 
-在运行该项目之前，请确保已安装以下 Python 库：
+在运行该项目之前，请确保已安装以下 Python 库以及相关环境：
+
 ```bash
-pip install paddlex flask numpy pillow requests
-paddlex：用于 OCR 处理。
-flask：用于创建 Web 服务。
-numpy 和 pillow：用于图像处理。
-requests：用于处理网络请求（下载图片）。
+pip install paddlepaddle==3.0.0b1 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+
+pip install https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0b1-py3-none-any.whl
+
+pip install ujson
+
+pip install flask numpy pillow requests
+#flask：用于创建 Web 服务。
+#numpy 和 pillow：用于图像处理。
+#requests：用于处理网络请求（下载图片）。
 ```
+
 ## API 使用指南
 
 ### 请求地址
+
 ```bash
 POST http://localhost:6666/ocr
 ```
@@ -70,3 +73,90 @@ POST http://localhost:6666/ocr
   - text：识别的文本内容。
   - score：识别得分。
 - image：可视化的结果图像（Base64 编码）。
+
+### 示例请求
+
+#### 1. 使用本地图片路径
+
+```json
+  {
+  "img": [
+    "/path/to/local/image1.jpg",
+    "/path/to/local/image2.jpg"
+  ],
+  "inferenceParams": {
+    "maxLongSide": 960
+  }
+}
+```
+
+#### 2. 使用图片 URL
+
+```json
+  {
+  "image": [
+    "http://example.com/image1.jpg",
+    "http://example.com/image2.jpg"
+  ],
+  "inferenceParams": {
+    "maxLongSide": 960
+  }
+}
+```
+
+#### 3. 使用 Base64 编码的图片
+
+```json
+{
+  "img_base64": [
+    "iVBORw0KGgoAAAANSUhEUgAA...",
+    "iVBORw0KGgoAAAANSUhEUgAA..."
+  ],
+  "inferenceParams": {
+    "maxLongSide": 960
+  }
+}
+```
+
+### 示例响应
+
+```json
+{
+  "errorCode": 0,
+  "errorMsg": "Success",
+  "result": [
+    {
+      "texts": [
+        {
+          "poly": [[x1, y1], [x2, y2], ...],
+          "text": "识别的文本内容1",
+          "score": 0.95
+        },
+        {
+          "poly": [[x1, y1], [x2, y2], ...],
+          "text": "识别的文本内容2",
+          "score": 0.90
+        }
+      ],
+      "image": "<Base64 编码的结果图像1>"
+    },
+    {
+      "texts": [
+        {
+          "poly": [[x1, y1], [x2, y2], ...],
+          "text": "识别的文本内容3",
+          "score": 0.93
+        }
+      ],
+      "image": "<Base64 编码的结果图像2>"
+    }
+  ]
+}
+```
+
+### 注意事项
+
+- 图片路径：当使用 img 参数传递本地图片路径时，确保服务端有权限访问这些路径，且路径格式正确。
+- 图片 URL：当使用 image 参数传递图片 URL 时，确保 URL 可访问，且图片格式受支持。
+- Base64 编码：当使用 img_base64 参数传递 Base64 编码的图片时，确保编码正确，无额外的前缀或换行符。
+- 字符编码：为了避免中文字符显示乱码，响应中设置了 ensure_ascii=False，并指定了 utf-8 编码。
